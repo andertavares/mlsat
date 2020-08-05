@@ -10,7 +10,7 @@ def dpll(cnf_file):
     :return:
     """
     f = CNF(from_file=cnf_file)
-    return dpll_solve(f, dict())
+    return dpll_solve(f, {})
 
 
 def dpll_solve(f, model):
@@ -98,21 +98,16 @@ def find_single_polarity(clauses):
     :param clauses:
     :return:
     """
-
-    occurrences = dict()  # marks the polarity of a previously found literal
-    single_polarity = set()  # guards which literals have single polarity
+    # construct a set with all literals
+    literals = set()
     for c in clauses:
-        for lit in c:
-            if lit not in occurrences:  # records the polarity of the first occurrence
-                occurrences[abs(lit)] = lit
-                single_polarity.add(abs(lit))
-            elif occurrences[abs(lit)] != lit:  # if this occurrence has different polarity, remove from set
-                single_polarity.discard(abs(lit))  # discard does not complain if element is not there
+        literals = literals.union({lit for lit in c})
 
-    if len(single_polarity) > 0:
-        return next(iter(single_polarity))  # hack to retrieve first element as set does not support indexing
-    else:
-        return None
+    # returns the first literal whose negated is not present (i.e. a pure literal)
+    for lit in literals:
+        if -lit not in literals:
+            return lit
+    return None
 
 
 def find_unit_clause(clauses):
