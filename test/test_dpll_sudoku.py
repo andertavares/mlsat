@@ -99,8 +99,8 @@ class TestDPLL(unittest.TestCase):
         ]
 
         cnf = cnf + [[flatten_var(z[0], z[1], z[2]) - 1] for z in example]
-
-        solution = dpll.dpll_solve(pysat.formula.CNF(from_clauses=cnf), {})
+        f = pysat.formula.CNF(from_clauses=cnf)
+        solution = dpll.model_dict_to_list(f.nv, dpll.dpll_solve(f, {}))
 
         X = [unflatten_var(v) for v in solution if v > 0]
         for i, cell in enumerate(sorted(X, key=lambda h: h[0] * N * N + h[1] * N)):
