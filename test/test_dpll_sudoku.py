@@ -102,6 +102,8 @@ class TestDPLL(unittest.TestCase):
         f = pysat.formula.CNF(from_clauses=cnf)
         solution = dpll.model_dict_to_list(f.nv, dpll.dpll_solve(f, {}))
 
+        self.assertIsNotNone(solution)
+
         X = [unflatten_var(v) for v in solution if v > 0]
         for i, cell in enumerate(sorted(X, key=lambda h: h[0] * N * N + h[1] * N)):
             print(cell[2] + 1, end=" ")
