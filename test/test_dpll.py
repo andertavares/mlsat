@@ -6,8 +6,30 @@ from dpll import dpll
 
 
 class TestDPLL(unittest.TestCase):
-    def test_choose_literal(self):
-        pass
+    def test_check_model(self):
+        # basic test
+        self.assertTrue(dpll.check_model([[1, -2], [2]], [1, 2]))
+        self.assertFalse(dpll.check_model([[1, -2], [2]], [1, -2]))
+        self.assertFalse(dpll.check_model([[1, -2], [-2]], [1, 2]))
+
+        # testing a tautology
+        taut = [[1, -1], [2, -2]]
+        self.assertTrue(dpll.check_model(taut, [-1, -2]))
+        self.assertTrue(dpll.check_model(taut, [-1, 2]))
+        self.assertTrue(dpll.check_model(taut, [1, -2]))
+        self.assertTrue(dpll.check_model(taut, [1, 2]))
+
+        # testing a contradiction
+        unsat = [[1, 2], [-1, -2], [-1, 2], [1, -2]]
+        self.assertFalse(dpll.check_model(unsat, [-1, -2]))
+        self.assertFalse(dpll.check_model(unsat, [-1, 2]))
+        self.assertFalse(dpll.check_model(unsat, [1, -2]))
+        self.assertFalse(dpll.check_model(unsat, [1, 2]))
+
+    def test_model_dict_to_list(self):
+        self.assertEqual([1, 2, -3], dpll.model_dict_to_list(3, {1: 1, 3: -3}))
+        self.assertEqual([-1, 2, 3], dpll.model_dict_to_list(3, {1: -1}))
+        self.assertEqual([-1, 2, 3, -4, 5], dpll.model_dict_to_list(5, {1: -1, 4: -4}))
 
     def test_find_single_polarity(self):
         self.assertEqual(1, dpll.find_single_polarity([[1, -2], [2]]))

@@ -3,6 +3,31 @@ import itertools
 import fire
 
 
+def check_model(clauses, model):
+    """
+    Returns whether an assignment (model) satisfies the clauses
+    :param clauses: list of lists, where each inner list contains positive or negated literals
+    :param model: list, where each element is a variable asserted (positive value) or negated (negative value)
+    :return:
+    """
+    # in all clauses, there must be at least one literal that agrees on sign with
+    # its assignment in the model
+    return all([any([model[abs(l) - 1] * l > 0 for l in clause]) for clause in clauses])
+
+
+def model_dict_to_list(nvars, model):
+    """
+    Converts a dict with the assignments of a formula to a simple list (0-based indexing)
+    :param nvars: number of variables in the formula (required to verify free literals)
+    :param model:
+    :return:
+    """
+    # if v is a free variable in the model, it be absent in the dict and get returns it asserted to the list
+    model_list = [model.get(v, v) for v in range(1, nvars+1)]
+
+    return model_list
+
+
 def dpll(cnf_file):
     """
     Runs dpll_solve in a given cnf_file
