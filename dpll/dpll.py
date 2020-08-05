@@ -2,6 +2,7 @@ from pysat.formula import CNF
 import itertools
 import fire
 
+
 def dpll(cnf_file):
     """
     Runs dpll_solve in a given cnf_file
@@ -76,8 +77,8 @@ def unit_propagation(f, l):
     """
     new_f = f.copy()
     # removes clauses with l
-    occurrences = [l in c for c in f.clauses]   # creates an array mask marking occurrences of l
-    new_f.clauses = itertools.compress(f.clauses, occurrences)  # filters the old list with the mask
+    occurrences = [l not in c for c in f.clauses]   # creates an array mask to keep clauses without l
+    new_f.clauses = list(itertools.compress(f.clauses, occurrences))  # filters the old list with the mask
 
     # removes occurrences of ~l
     for c in new_f.clauses:
