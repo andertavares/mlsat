@@ -63,7 +63,7 @@ def dpll_solve(f, model):
         f = unit_propagation(f, l)
         return dpll_solve(f, model)
 
-    # if f contains a literal with single polarity, set it up to provoke unit propagations
+    # purification: if f contains a literal with single polarity, set it up to provoke unit propagations
     l = find_single_polarity(f.clauses)
     if l is not None:
         # adds a unit clause with l to f to trigger unit propagation
