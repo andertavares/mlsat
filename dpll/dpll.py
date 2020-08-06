@@ -52,7 +52,8 @@ def dpll(cnf_file):
     :return:
     """
     f = CNF(from_file=cnf_file)
-    return dpll_solve(f, {})
+    model = dpll_solve(f, {})
+    return ' '.join([str(x) for x in model_dict_to_list(f.nv, model)]) if model is not None else None
 
 
 def dpll_solve(f, model):
