@@ -1,4 +1,6 @@
+import os
 import unittest
+import tarfile
 
 import pysat
 
@@ -78,7 +80,7 @@ class TestDPLL(unittest.TestCase):
         self.assertIsNotNone(model)
         self.assertEqual({1: 1, 3: -3}, model)
 
-    def test_dpll_solve_satlib_uf(self):
+    def test_dpll_solve_satlib_uf50_01(self):
         """
         Tests the solver on a SATisfiable instance from satlib
         :return:
@@ -89,12 +91,32 @@ class TestDPLL(unittest.TestCase):
         # 47 48 49 -50
         self.assertIsNotNone(dpll.dpll('uf50-01.cnf'))
 
-    def test_dpll_solve_satlib_uuf(self):
+    def test_dpll_solve_satlib_uf75(self):
+        """
+        Tests the solver on all uf75 instances from satlib (all satisfiable)
+        :return:
+        """
+        tmp_dir = '/tmp/uf75'
+        with tarfile.open('uf75-325.tar.gz') as tf:
+            tf.extractall(tmp_dir)
+        for f in os.listdir(tmp_dir):
+            print(f'Testing {f}')
+            self.assertIsNotNone(dpll.dpll(os.path.join(tmp_dir, f)))
+
+
+    def test_dpll_solve_satlib_uuf50_01(self):
         """
         Tests the solver on a UNSATisfiable instance from satlib
         :return:
         """
         self.assertIsNone(dpll.dpll('uuf50-01.cnf'))
+
+    def test_dpll_solve_satlib_uuf75(self):
+        """
+        Tests the solver on all uuf75 instances from satlib (all UNsatisfiable)
+        :return:
+        """
+        pass #self.assertIsNotNone(dpll.dpll('uf50-01.cnf'))
 
 
 if __name__ == '__main__':

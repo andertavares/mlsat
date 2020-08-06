@@ -1,6 +1,8 @@
-from pysat.formula import CNF
+from copy import copy, deepcopy
 import itertools
+
 import fire
+from pysat.formula import CNF
 
 
 def check_model(clauses, model):
@@ -18,12 +20,27 @@ def check_model(clauses, model):
 def model_dict_to_list(nvars, model):
     """
     Converts a dict with the assignments of a formula to a simple list (0-based indexing)
+    Free variables are assigned positive literals
     :param nvars: number of variables in the formula (required to verify free literals)
     :param model:
     :return:
     """
-    # if v is a free variable in the model, it be absent in the dict and get returns it asserted to the list
+    # if v is a free variable in the model, it is absent in the dict and get returns it asserted to the list
     model_list = [model.get(v, v) for v in range(1, nvars+1)]
+
+    return model_list
+
+
+def partial_model_dict_to_list(nvars, model):
+    """
+    Converts a dict with the assignments of a formula to a simple list (0-based indexing)
+    Free variables appear as 0
+    :param nvars: number of variables in the formula (required to verify free literals)
+    :param model:
+    :return:
+    """
+    # if v is a free variable in the model, it is absent in the dict and get returns 0 to indicate it
+    model_list = [model.get(v, 0) for v in range(1, nvars+1)]
 
     return model_list
 
@@ -56,6 +73,11 @@ def dpll_solve(f, model):
     if any([len(c) == 0 for c in f.clauses]):
         return None
 
+    # trying to use a 'local' variables
+    model = copy(model)
+    f = f.copy()
+    # print(partial_model_dict_to_list(f.nv, model))
+
     # unit propagation if f contains a unit clause
     l = find_unit_clause(f.clauses)
     if l is not None:
@@ -72,9 +94,17 @@ def dpll_solve(f, model):
 
     # no unit propagations or pure literals, must choose a literal to branch on
     l = choose_literal(f, model)
-    # adds a unit clause with l to f to trigger unit propagation
+
+    # tries to branch on asserted then on negated literal
     f.clauses.append([l])
-    return dpll_solve(f, model)
+    result = dpll_solve(f, model)
+    if result is not None:
+        return result
+    else:
+        # undoes last append and insert negated literal
+        del f.clauses[-1]
+        f.clauses.append([-l])
+        return dpll_solve(f, model)
 
 
 def choose_literal(f, model):
