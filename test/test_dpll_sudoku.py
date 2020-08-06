@@ -55,7 +55,7 @@ def region_rules (cnf):
     return cnf
 
 
-class TestDPLL(unittest.TestCase):
+class TestDPLLSudoku(unittest.TestCase):
     def test_sudoku(self):
         cnf = []
 
