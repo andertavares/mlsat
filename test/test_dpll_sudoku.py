@@ -109,8 +109,8 @@ class TestDPLLSudoku(unittest.TestCase):
         for i, cell in enumerate(sorted(X, key=lambda h: h[0] * N * N + h[1] * N)):
             print(cell[2] + 1, end=" ")
             if (i+1) % M == 0: print("|", end="")  # horizontal wall
-            if (i + 1) % N == 0: print("")          # newline
-            if (i + 1) % (N*3) == 0: print("-" * 21)    # vertical wall
+            if (i+1) % N == 0: print("")          # newline
+            if (i+1) % (N*M) == 0: print("-" * 21)    # vertical wall
 
 
 if __name__ == '__main__':
