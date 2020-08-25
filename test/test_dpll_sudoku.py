@@ -100,9 +100,9 @@ class TestDPLLSudoku(unittest.TestCase):
 
         cnf = cnf + [[flatten_var(z[0], z[1], z[2]) - 1] for z in example]
         f = pysat.formula.CNF(from_clauses=cnf)
-        solution = dpll.model_dict_to_list(f.nv, dpll.dpll_solve(f, {}))
+        solution = dpll.DPLL(formula=f).get_model_list() #model_dict_to_list(f.nv, dpll.dpll_solve(f, {}))
 
-        self.assertIsNotNone(solution)
+        self.assertNotEqual(0, len(solution))
 
         X = [unflatten_var(v) for v in solution if v > 0]
 
