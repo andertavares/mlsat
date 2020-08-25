@@ -38,6 +38,7 @@ class TestDPLL(unittest.TestCase):
         self.assertEqual([1, 2, -3], dpll.model_dict_to_list(3, {1: 1, 3: -3}))
         self.assertEqual([-1, 2, 3], dpll.model_dict_to_list(3, {1: -1}))
         self.assertEqual([-1, 2, 3, -4, 5], dpll.model_dict_to_list(5, {1: -1, 4: -4}))
+        self.assertEqual([], dpll.model_dict_to_list(5, {}))
 
     def test_find_single_polarity(self):
         self.assertEqual(1, dpll.find_single_polarity([[1, -2], [2]]))
@@ -66,25 +67,52 @@ class TestDPLL(unittest.TestCase):
 
     def test_dpll_solve_empty(self):
         f = pysat.formula.CNF(from_clauses=[])
-        model = dpll.dpll_solve(f, {})
+        model = dpll.DPLL(formula=f).solve()
         self.assertIsNotNone(model)
         self.assertEqual({}, model)
 
     def test_dpll_solve_trivial_contradiction(self):
         f = pysat.formula.CNF(from_clauses=[[1], [-1]])
-        self.assertIsNone(dpll.dpll_solve(f, {}))
+        solver = dpll.DPLL(formula=f)
+        model = solver.solve()
+        self.assertIsNone(model)
 
     def test_dpll_solve_tautology(self):
         f = pysat.formula.CNF(from_clauses=[[1, -1]])
-        model = dpll.dpll_solve(f, {})
+        model = dpll.DPLL(formula=f).solve()
         self.assertIsNotNone(model)
-        # self.assertEqual({1: 1}, model)
+        self.assertEqual({1: 1}, model)
 
     def test_dpll_solve_with_pure_literals(self):
         f = pysat.formula.CNF(from_clauses=[[1, -2], [1, 3], [-3, -2]])
-        model = dpll.dpll_solve(f, {})
+        model = dpll.DPLL(formula=f).solve()
         self.assertIsNotNone(model)
         self.assertEqual({1: 1, 3: -3}, model)
+
+    def test_get_model_list(self):
+        """
+        Same test as before, plus get_model_list
+        :return:
+        """
+        f = pysat.formula.CNF(from_clauses=[[1, -2], [1, 3], [-3, -2]])
+        solver = dpll.DPLL(formula=f)
+        model = solver.solve()
+        self.assertIsNotNone(model)
+        self.assertEqual({1: 1, 3: -3}, model)
+        self.assertEqual([1, 2, -3], solver.get_model_list())
+
+    def test_get_model_str(self):
+        """
+        Same test as before, plus get_model_str
+        :return:
+        """
+        f = pysat.formula.CNF(from_clauses=[[1, -2], [1, 3], [-3, -2]])
+        solver = dpll.DPLL(formula=f)
+        model = solver.solve()
+        self.assertIsNotNone(model)
+        self.assertEqual({1: 1, 3: -3}, model)
+        self.assertEqual('1 2 -3', solver.get_model_str())
+
 
 
 if __name__ == '__main__':

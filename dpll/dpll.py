@@ -5,6 +5,114 @@ import fire
 from pysat.formula import CNF
 
 
+class DPLL:
+    def __init__(self, cnf_file=None, formula=None):
+        """
+        Creates a DPLL search instances. Either the cnf_file or the formula must be supplied
+        :param cnf_file:
+        :param formula:
+        """
+        if cnf_file is None and formula is None:
+            raise ValueError('Please provide either a cnf file or a formula')
+
+        self.formula = formula if formula is not None else CNF(from_file=cnf_file)
+
+        self.statistics = {
+            'branches': 0,
+            'unit_propagations': 0,
+            'purifications': 0,
+            'up_clauses_cleaned': 0,
+            'up_literals_cleaned': 0,
+        }
+
+        self.solved = False
+        self.model = None
+
+    def solve(self):
+        """
+        Computes a solution using the DPLL algorithm and returns it.
+        The solution is a dict(var -> value) in DIMACS notation and might
+        a partial assignment of values to the variables.
+        For example, {1: -1, 3: 3, 4: -4} means that x1=F, x2 is undetermined, x3=T, x4=F.
+        Undetermined variables can be either T or F
+        :return:
+        """
+        if not self.solved:
+            self.model = self.__dpll(self.formula, {})
+            self.solved = True
+        return self.model
+
+    def get_model_str(self):
+        """
+        Returns the computed solution as a space-separated string in DIMACS notation.
+        Undetermined variables in the solution (see solve()) are assigned True.
+        If the formula has no solution, returns an empty string
+        :return:
+        """
+        self.solve()  # ensures that the solution has been computed
+        return ' '.join([str(x) for x in self.get_model_list()])
+
+    def get_model_list(self):
+        """
+        Returns the comptued solution as a list in DIMACS notation.
+        Undetermined variables in the solution (see solve()) are assigned True.
+        If the formula has no solution, returns an empty list.
+        :return:
+        """
+        self.solve()
+        return model_dict_to_list(self.formula.nv, self.model)
+
+    def __dpll(self, f, model):
+        """
+        Runs the DPLL algorithm on a given formula and a given (possibly partial)
+        assignment (model)
+        Possible issue: model might have to be copied as partial assignments are not undone
+        :param f: boolean formula (instance of pysat.formula.CNF)
+        :param model: partial assignment (dict)
+        :return:
+        """
+        # an empty formula is satisfiable
+        if len(f.clauses) == 0:
+            return model
+
+        # if any clause is empty, the formula is UNSAT
+        if any([len(c) == 0 for c in f.clauses]):
+            return None
+
+        # trying to use a 'local' variables
+        model = copy(model)
+        f = f.copy()
+        # print(partial_model_dict_to_list(f.nv, model))
+
+        # unit propagation if f contains a unit clause
+        l = find_unit_clause(f.clauses)
+        if l is not None:
+            model[abs(l)] = l  # adds the literal to its index in the model
+            f = unit_propagation(f, l)
+            return self.__dpll(f, model)
+
+        # purification: if f contains a literal with single polarity, set it up to provoke unit propagations
+        l = find_single_polarity(f.clauses)
+        if l is not None:
+            # adds a unit clause with l to f to trigger unit propagation
+            f.clauses.append([l])
+            return self.__dpll(f, model)
+
+        # no unit propagations or pure literals, must choose a literal to branch on
+        l = choose_literal(f, model)
+
+        # tries to branch on asserted then on negated literal
+        f.clauses.append([l])
+        result = self.__dpll(f, model)
+        if result is not None:
+            return result
+        else:
+            # undoes last append and insert negated literal
+            del f.clauses[-1]
+            f.clauses.append([-l])
+            return self.__dpll(f, model)
+
+
 def check_model(clauses, model):
     """
     Returns whether an assignment (model) satisfies the clauses
@@ -25,6 +133,9 @@ def model_dict_to_list(nvars, model):
     :param model:
     :return:
     """
+    # returns an empty list if the model is empty
+    if len(model) == 0:
+        return []
     # if v is a free variable in the model, it is absent in the dict and get returns it asserted to the list
     model_list = [model.get(v, v) for v in range(1, nvars+1)]
 
@@ -43,69 +154,6 @@ def partial_model_dict_to_list(nvars, model):
     model_list = [model.get(v, 0) for v in range(1, nvars+1)]
 
     return model_list
-
-
-def dpll(cnf_file):
-    """
-    Runs dpll_solve in a given cnf_file
-    :param cnf_file:
-    :return:
-    """
-    f = CNF(from_file=cnf_file)
-    model = dpll_solve(f, {})
-    return ' '.join([str(x) for x in model_dict_to_list(f.nv, model)]) if model is not None else None
-
-
-def dpll_solve(f, model):
-    """
-    Runs the DPLL algorithm on a given formula and a given partial
-    assignment (model)
-    Possible issue: model might have to be copied as partial assignments are not undone
-    :param f: boolean formula (instance of pysat.formula.CNF)
-    :param model: partial assignment (dict)
-    :return:
-
-    """
-    # an empty formula is satisfiable
-    if len(f.clauses) == 0:
-        return model
-
-    # if any clause is empty, the formula is UNSAT
-    if any([len(c) == 0 for c in f.clauses]):
-        return None
-
-    # trying to use a 'local' variables
-    model = copy(model)
-    f = f.copy()
-    # print(partial_model_dict_to_list(f.nv, model))
-
-    # unit propagation if f contains a unit clause
-    l = find_unit_clause(f.clauses)
-    if l is not None:
-        model[abs(l)] = l  # adds the literal to its index in the model
-        f = unit_propagation(f, l)
-        return dpll_solve(f, model)
-
-    # purification: if f contains a literal with single polarity, set it up to provoke unit propagations
-    l = find_single_polarity(f.clauses)
-    if l is not None:
-        # adds a unit clause with l to f to trigger unit propagation
-        f.clauses.append([l])
-        return dpll_solve(f, model)
-
-    # no unit propagations or pure literals, must choose a literal to branch on
-    l = choose_literal(f, model)
-
-    # tries to branch on asserted then on negated literal
-    f.clauses.append([l])
-    result = dpll_solve(f, model)
-    if result is not None:
-        return result
-    else:
-        # undoes last append and insert negated literal
-        del f.clauses[-1]
-        f.clauses.append([-l])
-        return dpll_solve(f, model)
 
 
 def choose_literal(f, model):
@@ -179,5 +227,16 @@ def find_unit_clause(clauses):
     return None
 
 
+def main(cnf_file):
+    """
+    Runs DPLL.solve in a given cnf_file
+    :param cnf_file:
+    :return:
+    """
+    solver = DPLL(cnf_file=cnf_file)
+    return solver.solve()
+    # return ' '.join([str(x) for x in model_dict_to_list(f.nv, model)]) if model is not None else None
+
+
 if __name__ == '__main__':
-    fire.Fire(dpll)
+    fire.Fire(main)
