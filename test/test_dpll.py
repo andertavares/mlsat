@@ -81,7 +81,6 @@ class TestDPLL(unittest.TestCase):
         f = pysat.formula.CNF(from_clauses=[[1, -1]])
         model = dpll.DPLL(formula=f).solve()
         self.assertIsNotNone(model)
-        self.assertEqual({1: 1}, model)
 
     def test_dpll_solve_with_pure_literals(self):
         f = pysat.formula.CNF(from_clauses=[[1, -2], [1, 3], [-3, -2]])
