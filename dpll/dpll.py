@@ -6,14 +6,16 @@ from pysat.formula import CNF
 
 
 class DPLL:
-    def __init__(self, cnf_file=None, formula=None):
+    def __init__(self, cnf_file=None, formula=None, choice_function=None):
         """
         Creates a DPLL search instances. Either the cnf_file or the formula must be supplied
-        :param cnf_file:
-        :param formula:
+        :param cnf_file: path to a .cnf file
+        :param formula: pysat.formula.CNF instance
+        :param choice_function: function that receives a formula (pysat.formula.CNF) and a model (dict(var->assignment in DIMACS notation)) and chooses the next literal to branch on
         """
         if cnf_file is None and formula is None:
             raise ValueError('Please provide either a cnf file or a formula')
+        self.choose_literal = choice_function if choice_function is not None else choose_random_literal
 
         self.formula = formula if formula is not None else CNF(from_file=cnf_file)
 
@@ -99,7 +101,7 @@ class DPLL:
             return self.__dpll(f, model)
 
         # no unit propagations or pure literals, must choose a literal to branch on
-        l = choose_literal(f, model)
+        l = self.choose_literal(f, model)
 
         # tries to branch on asserted then on negated literal
         f.clauses.append([l])
@@ -156,7 +158,7 @@ def partial_model_dict_to_list(nvars, model):
     return model_list
 
 
-def choose_literal(f, model):
+def choose_random_literal(f, model):
     """
     Chooses a free literal at random
     :param f: an instance of pysat.formula.CNF

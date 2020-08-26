@@ -38,7 +38,7 @@ class TestDPLL(unittest.TestCase):
         self.assertEqual([1, 2, -3], dpll.model_dict_to_list(3, {1: 1, 3: -3}))
         self.assertEqual([-1, 2, 3], dpll.model_dict_to_list(3, {1: -1}))
         self.assertEqual([-1, 2, 3, -4, 5], dpll.model_dict_to_list(5, {1: -1, 4: -4}))
-        self.assertEqual([], dpll.model_dict_to_list(5, {}))
+        self.assertEqual([], dpll.model_dict_to_list(5, None))
 
     def test_find_single_polarity(self):
         self.assertEqual(1, dpll.find_single_polarity([[1, -2], [2]]))
