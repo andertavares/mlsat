@@ -133,8 +133,8 @@ def model_dict_to_list(nvars, model):
     :param model:
     :return:
     """
-    # returns an empty list if the model is empty
-    if len(model) == 0:
+    # returns an empty list if the model is none
+    if model is None:
         return []
     # if v is a free variable in the model, it is absent in the dict and get returns it asserted to the list
     model_list = [model.get(v, v) for v in range(1, nvars+1)]
