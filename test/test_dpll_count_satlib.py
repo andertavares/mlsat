@@ -21,8 +21,11 @@ class TestDPLLCount(unittest.TestCase):
         with tarfile.open('instances/3cnf_v20_sat.tar.gz') as tf:
             tf.extractall(tmp_dir)
         for f in os.listdir(tmp_dir):
-            print(f'Testing {f}')
-            self.assertGreater(DPLLCount(cnf_file=os.path.join(tmp_dir, f)).count(), 0)
+            path = os.path.join(tmp_dir, f)
+            with Solver(bootstrap_with=CNF(path).clauses) as s:
+                count = len(list(s.enum_models()))
+                print(path, count)
+            self.assertEqual(count, DPLLCount(cnf_file=path).count())
         shutil.rmtree(tmp_dir)
 
     def test_count_unsat20vars(self):
@@ -38,6 +41,7 @@ class TestDPLLCount(unittest.TestCase):
             path = os.path.join(tmp_dir, f)
             with Solver(bootstrap_with=CNF(path).clauses) as s:
                 count = len(list(s.enum_models()))
+                print(path, count)
             self.assertEqual(count, DPLLCount(cnf_file=path).count())
         shutil.rmtree(tmp_dir)
 
