@@ -19,7 +19,7 @@ class DPLLCount:
         self.choose_literal = choice_function if choice_function is not None else dpll.choose_random_literal
 
         self.formula = formula if formula is not None else CNF(from_file=cnf_file)
-        self.n_vars = formula.nv
+        self.n_vars = self.formula.nv
 
         self.statistics = {
             'branches': 0,
