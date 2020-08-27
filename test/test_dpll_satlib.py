@@ -36,7 +36,37 @@ class TestDPLLSatlib(unittest.TestCase):
         """
         self.assertEqual(0, len(dpll.DPLL(cnf_file='instances/uuf50-01.cnf').get_model_list()))
 
-    def test_dpll_solve_satlib_uf50(self):
+    def test_dpll_solve_sat20vars(self):
+        """
+        Tests the solver 100 SATisfiable random 3CNFinstances with 20 vars
+        (they were generated with cnfgen rather than from SATLIB)
+        :return:
+        """
+        tmp_dir = '/tmp/sat100'
+        with tarfile.open('instances/3cnf_v20_sat.tar.gz') as tf:
+            tf.extractall(tmp_dir)
+        for f in os.listdir(tmp_dir):
+            print(f'Testing {f}')
+            model = dpll.DPLL(cnf_file=os.path.join(tmp_dir, f)).get_model_list()
+            self.assertGreater(len(model), 0)
+        shutil.rmtree(tmp_dir)
+
+    def test_dpll_solve_unsat20vars(self):
+        """
+        Tests the solver 100 UNSATisfiable random 3CNFinstances with 20 vars
+        (they were generated with cnfgen rather than from SATLIB)
+        :return:
+        """
+        tmp_dir = '/tmp/unsat100'
+        with tarfile.open('instances/3cnf_v20_unsat.tar.gz') as tf:
+            tf.extractall(tmp_dir)
+        for f in os.listdir(tmp_dir):
+            print(f'Testing {f}')
+            model = dpll.DPLL(cnf_file=os.path.join(tmp_dir, f)).get_model_list()
+            self.assertEqual(len(model), 0)
+        shutil.rmtree(tmp_dir)
+
+    '''def test_dpll_solve_satlib_uf50(self):
         """
         Tests the solver on the first 100 uf50 instances from satlib (all satisfiable)
         :return:
@@ -63,8 +93,8 @@ class TestDPLLSatlib(unittest.TestCase):
             print(f'Testing {f}')
             self.assertEqual(0, len(dpll.DPLL(cnf_file=os.path.join(tmp_dir, f)).get_model_list()))
         shutil.rmtree(tmp_dir)
-
-    '''
+    
+    
     def test_dpll_solve_satlib_uf75(self):
         """
         Tests the solver on all uf75 instances from satlib (all satisfiable)
