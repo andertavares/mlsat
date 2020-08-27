@@ -19,7 +19,15 @@ class TestDPLLSatlib(unittest.TestCase):
         # -1 2 -3 4 5 6 7 8 9 -10 -11 12 -13 14 15 -16 -17 -18 19 20 -21 -22 23 -24 -25
         # -26 27 -28 -29 -30 -31 32 -33 -34 35 36 37 38 39 -40 -41 -42 -43 -44 -45 -46
         # 47 48 49 -50
-        self.assertNotEqual(0, len(dpll.DPLL(cnf_file='uf50-01.cnf').get_model_list()))
+        self.assertGreater(len(dpll.DPLL(cnf_file='uf50-01.cnf').get_model_list()), 0)
+
+    def test_dpll_solve_satlib_uf50_040(self):
+        """
+        Tests the solver on a SATisfiable instance from satlib
+        that was problematic on the uf50 tests
+        :return:
+        """
+        self.assertGreater(len(dpll.DPLL(cnf_file='uf50-040_clean.cnf').get_model_list()), 0)
 
     def test_dpll_solve_satlib_uuf50_01(self):
         """
@@ -31,7 +39,6 @@ class TestDPLLSatlib(unittest.TestCase):
     def test_dpll_solve_satlib_uf50(self):
         """
         Tests the solver on the first 100 uf50 instances from satlib (all satisfiable)
-        FIXME shouldn't the test use assertNotEqual?
         :return:
         """
         tmp_dir = '/tmp/uf50'
@@ -39,7 +46,9 @@ class TestDPLLSatlib(unittest.TestCase):
             tf.extractall(tmp_dir)
         for f in os.listdir(tmp_dir):
             print(f'Testing {f}')
-            self.assertEqual(0, len(dpll.DPLL(cnf_file=os.path.join(tmp_dir, f)).get_model_list()))
+            model = dpll.DPLL(cnf_file=os.path.join(tmp_dir, f)).solve()
+            print(model)
+            self.assertGreater(len(model), 0)
         shutil.rmtree(tmp_dir)
 
     def test_dpll_solve_satlib_uuf50(self):
@@ -82,6 +91,7 @@ class TestDPLLSatlib(unittest.TestCase):
             self.assertEqual(0, len(dpll.DPLL(cnf_file=os.path.join(tmp_dir, f)).get_model_list()))
         shutil.rmtree(tmp_dir)
     '''
+
 
 if __name__ == '__main__':
     unittest.main()
