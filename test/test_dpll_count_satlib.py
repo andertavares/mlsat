@@ -61,33 +61,6 @@ class TestDPLLCountSatlib(unittest.TestCase):
             self.assertEqual(0, DPLLCount(cnf_file=os.path.join(tmp_dir, f)).count())
         shutil.rmtree(tmp_dir)
 
-    '''
-    def test_dpll_solve_satlib_uf75(self):
-        """
-        Tests the solver on all uf75 instances from satlib (all satisfiable)
-        :return:
-        """
-        tmp_dir = '/tmp/uf75'
-        with tarfile.open('uf75-325.tar.gz') as tf:
-            tf.extractall(tmp_dir)
-        for f in os.listdir(tmp_dir):
-            print(f'Testing {f}')
-            self.assertNotEqual(0, len(dpll.DPLL(cnf_file=os.path.join(tmp_dir, f)).get_model_list()))
-        shutil.rmtree(tmp_dir)
-
-    def test_dpll_solve_satlib_uuf75(self):
-        """
-        Tests the solver on all uuf75 instances from satlib (all UNsatisfiable)
-        :return:
-        """
-        tmp_dir = '/tmp/uuf75'
-        with tarfile.open('uuf75-325.tar.gz') as tf:
-            tf.extractall(tmp_dir)
-        for f in os.listdir(tmp_dir):
-            print(f'Testing {f}')
-            self.assertEqual(0, len(dpll.DPLL(cnf_file=os.path.join(tmp_dir, f)).get_model_list()))
-        shutil.rmtree(tmp_dir)
-    '''
 
 if __name__ == '__main__':
     unittest.main()
